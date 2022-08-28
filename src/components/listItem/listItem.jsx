@@ -8,7 +8,7 @@ import { useState } from "react";
 export default function ListItem({index}){
 
     const [isHovered, setIsHovered] = useState(false)
-    const trailer = "https://www.youtube.com/embed/zAGVQLHvwOY";
+    //const trailer = "https://www.youtube.com/embed/zAGVQLHvwOY";
 
     return(
         <div

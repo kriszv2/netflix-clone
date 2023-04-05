@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import "./login.scss"
 import axios from "axios"
 
@@ -8,8 +8,12 @@ export default function Login(){
     const [email, setEmail] = useState(``);
     const [password, setPassword] = useState(``);
 
-    const postLogin = async () => {
-        let res = await axios.post("http://localhost:4000/login")
+    const postLogin = async (e) => {
+        e.preventDefault();
+        let res = await axios.post("http://localhost:4000/login", { email, password })
+        
+        localStorage.setItem("token", res.data.accessToken)
+        console.log(res)
     }
 
     return(
@@ -20,7 +24,7 @@ export default function Login(){
                 </div>
             </div>
             <div className="container">
-            <form>
+            <form onSubmit={postLogin}>
                 <h1>Sign In</h1>
                 
                 <input type="email" onChange={(e)=>setEmail(e.target.value)} value={email} placeholder="E-mail or phone number" />

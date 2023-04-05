@@ -1,24 +1,35 @@
 const router = require("express").Router();
 const User = require("../models/User");
-const CryptoJS = require("crypto-js");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const authMiddleware = require("../authMiddleware");
+const dotenv = require("dotenv");
+dotenv.config();
+
+router.get("/verify", authMiddleware, (req, res) => {
+  res.status(200).json({ message: "Valid token" });
+});
 
 //REGISTER
+
 router.post("/register", async (req, res) => {
-  const newUser = new User({
-    username: req.body.username,
-    email: req.body.email,
-    password: CryptoJS.AES.encrypt(
-      req.body.password,
-      process.env.SECRET_KEY
-    ).toString(),
-  });
+  const { username, email, password } = req.body;
+
   try {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    const newUser = new User({
+      username: username || "",
+      email,
+      password: hashedPassword,
+    });
+
     const user = await newUser.save();
     res.status(201).json(user);
-    console.log(user);
   } catch (err) {
-    res.status(500).json(err);
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
@@ -26,13 +37,17 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
-    !user && res.status(401).json("Wrong password or username!");
+    if (!user) {
+      return res.status(401).json("Wrong email or password!");
+    }
 
-    const bytes = CryptoJS.AES.decrypt(user.password, process.env.SECRET_KEY);
-    const originalPassword = bytes.toString(CryptoJS.enc.Utf8);
-
-    originalPassword !== req.body.password &&
-      res.status(401).json("Wrong password or username!");
+    const isPasswordValid = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+    if (!isPasswordValid) {
+      return res.status(401).json("Wrong email or password!");
+    }
 
     const accessToken = jwt.sign(
       { id: user._id, isAdmin: user.isAdmin },
@@ -40,7 +55,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "5d" }
     );
 
-    const { password, ...info } = user._doc;
+    const { ...info } = user._doc;
 
     res.status(200).json({ ...info, accessToken });
   } catch (err) {

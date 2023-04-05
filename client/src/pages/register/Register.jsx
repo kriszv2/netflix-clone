@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 import "./register.scss"
 import { Link } from "react-router-dom"
+import axios from "axios"
 
 export default function Register(){
     const[email,setEmail] = useState("")
@@ -13,7 +14,16 @@ export default function Register(){
     const handleFinish = () =>{
         setPassword(passwordRef.current.value)
     }
-
+    const register = async (e) => {
+        e.preventDefault();
+        await axios.post("http://localhost:4000/register", { email, password }).then((res) => {
+            console.log(res.data)
+        }).catch(error => {
+            console.log(error)
+        })
+    }
+    console.log(email);
+    console.log(password)
     return(
         <div className="register">
             <div className="top">
@@ -32,7 +42,7 @@ export default function Register(){
                     <button className="registerButton" onClick={handleStart} >Get Started!</button>
                 </div>
                 ) :
-                (<form className="input">
+                (<form className="input" onSubmit={register}>
                 <input type="password" placeholder="Password" className="password" ref={passwordRef}/>
                 <button className="registerButton" onClick={handleFinish} >Start!</button>
             </form>)}

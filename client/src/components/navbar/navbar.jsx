@@ -1,17 +1,21 @@
 import { Search } from "@mui/icons-material"
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import "./navbar.scss"
 
-const Navbar = () =>{
+const Navbar = (props) => {
+    
+    const [username, setUsername] = useState(``);
     const [isScrolled, setIsScrolled] = useState(false)
     window.onscroll = () =>{
         setIsScrolled(window.pageYOffset === 0 ? false : true);
         return () => (window.onscroll = null)
     }
-
-
+    useEffect(() => {
+        console.log(props.user.username)
+    },[props])
+    
     return(
         <div className={isScrolled ? "navbar scrolled" : "navbar"}>
             <div className="container">
@@ -27,7 +31,7 @@ const Navbar = () =>{
                 <div className="right">
                     <Search className="icon"/>
                     <NotificationsIcon className="icon"/>
-                    <img src="" alt="" className="" />
+                    <img src="" alt={username} className="" />
                     <div className="profile">
                     <ArrowDropDownIcon className="icon"/>
                     <div className="options">

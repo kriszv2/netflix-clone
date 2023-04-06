@@ -8,6 +8,8 @@ import axios from "axios";
 
 const Home = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState();
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,8 +19,19 @@ const Home = () => {
         .get("http://localhost:4000/verify", {
           headers: { Authorization: `Bearer ${token}` },
         })
-        .then(() => {
+        .then((res) => {
           setIsLoggedIn(true);
+          axios
+            .get("http://localhost:4000/user", {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then((res) => {
+              setUser(res.data.user);
+              setLoading(false);
+            })
+            .catch((e) => {
+              console.log(e);
+            });
         })
         .catch((error) => {
           console.log(error);
@@ -28,10 +41,14 @@ const Home = () => {
     }
   }, []);
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   if (isLoggedIn) {
     return (
       <div className="home">
-        <Navbar />
+        <Navbar user={user} />
         <Featured />
         <List />
         <List />
@@ -39,7 +56,7 @@ const Home = () => {
         <List />
       </div>
     );
-  } 
+  }
 };
 
 export default Home;
